@@ -19,7 +19,7 @@ class RulesLogger:
         self._rules_triggered = []
         self._debug           = debug
         self._rules_filter    = re.compile(regex_rules_filter) if regex_rules_filter is not None \
-                            else re.compile('^.*')
+                                    else re.compile('^.*')
         self._score           = 0.0
         self._threshold       = threshold
         self._status          = 200
@@ -46,9 +46,13 @@ class RulesLogger:
             ))
 
         if rule_message.m_ruleId == 949110:
-            self._score = float(re.findall(r"\(Total Score: (\d+)\)", str(rule_message.m_message))[0])
+            self._score = float(
+                re.findall(r"\(Total Score: (\d+)\)",
+                str(rule_message.m_message))[0]
+            )
         
-        elif re.match(self._rules_filter, str(rule_message.m_ruleId)) and (str(rule_message.m_ruleId) not in self._rules_triggered):
+        elif re.match(self._rules_filter, str(rule_message.m_ruleId)) and \
+                (str(rule_message.m_ruleId) not in self._rules_triggered):
             self._rules_triggered.append(str(rule_message.m_ruleId))
         
         if self._score >= self._threshold:

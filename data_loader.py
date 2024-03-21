@@ -28,7 +28,7 @@ class DataLoader:
         Returns:
         --------
             pd.DataFrame
-                The dataset.
+                The loaded dataset.
         """
         legitimate_data = []
         with open(self._legitimate_path, 'r') as file:
@@ -47,5 +47,5 @@ class DataLoader:
 
         return pd.DataFrame({
             'payloads': combined_data,
-            'label': combined_labels
+            'labels': combined_labels
         })

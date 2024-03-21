@@ -8,7 +8,7 @@ from data_loader import DataLoader
 ROOT_PATH        = "."
 CRS_RULES_DIR    = "./coreruleset/rules/"
 MODELS_BASE_PATH = ""
-DATASET_PATH     = '../final_dataset'
+DATASET_PATH     = '../modsec-test-dataset/'
 
 def read_file(file_path, is_json=False):
     try:
@@ -29,23 +29,8 @@ def read_file(file_path, is_json=False):
     else:
         return data
 
-
+import numpy as np
 if __name__ == '__main__':
-
-    # owasp_crs_rules_ids_path = os.path.join(ROOT_PATH, 'owasp_crs_sqli_rules_ids.json')
-    # owasp_crs_ids = read_file(owasp_crs_rules_ids_path, is_json=True)['rules_ids']
-
-    # waf = PyModSecurity(CRS_RULES_DIR, 4, owasp_crs_ids)
-
-    # queries = [
-    #     "INSERT INTO `tab` ( `col1` ) VALUES ( 'g' );"
-    # ]
-
-    # features, scores = waf.process_queries(queries)
-
-    # print(features)
-    # print(scores)
-
 
     loader = DataLoader(
         malicious_path = os.path.join(DATASET_PATH, 'malicious/sqli'),
@@ -53,3 +38,17 @@ if __name__ == '__main__':
     )
 
     data = loader.load_data()
+
+    owasp_crs_rules_ids_path = os.path.join(ROOT_PATH, 'owasp_crs_sqli_rules_ids.json')
+    owasp_crs_ids = read_file(owasp_crs_rules_ids_path, is_json=True)['rules_ids']
+
+    waf = PyModSecurity(
+        rules_dir=CRS_RULES_DIR,
+        threshold=5.0,
+        pl=4,
+        output_type='binary'
+    )
+
+    scores = waf.predict(data['payloads'][:10_000])
+
+    print(scores)

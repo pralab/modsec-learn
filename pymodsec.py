@@ -84,7 +84,7 @@ class PyModSecurity():
         )
 
 
-    def process_query(self, payload: str):
+    def _process_query(self, payload: str):
         """
         Process the provided payload using the ModSecurity CRS WAF.
 
@@ -154,22 +154,24 @@ class PyModSecurity():
                 Vector containing the class labels/score for each sample.
         """
         def process_and_get_prediction(x):
-            self.process_query(x)
+            self._process_query(x)
             return self._process_response()
 
-        if len(X.shape) == 1:
-            scores = np.array(
-                list(map(process_and_get_prediction, X))
-            )
+        if isinstance(X, list):
+            scores = np.array([process_and_get_prediction(x) for x in X])
+
+        elif len(X.shape) == 1:
+            scores = scores = np.array([process_and_get_prediction(x) for x in X])
+        
         else:
             raise ValueError(
-                "Invalid input shape. Expected 1D array, got {}D array"
-                    .format(len(X.shape))
+            "Invalid input shape. Expected 1D array or list, got {}D array"
+                .format(len(X.shape))
             )
         
         return scores
 
-    def get_triggered_rules(self):
+    def _get_triggered_rules(self):
         """
         Returns the list of the triggered rules.
 

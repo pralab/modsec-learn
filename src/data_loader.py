@@ -1,5 +1,8 @@
+"""
+A class to load the dataset from the filesystem.
+"""
+
 import pandas as pd
-import numpy as np
 
 
 class DataLoader:
@@ -10,12 +13,16 @@ class DataLoader:
         """
         Constructor of DataLoader class.
 
-        Arguments:
+        Parameters:
         ----------
             malicious_path: str
                 The path to the malicious dataset.
             legitimate_path: str
                 The path to the benign dataset.
+        
+        Returns:
+        --------
+            self: object
         """
         self._malicious_path  = malicious_path
         self._legitimate_path = legitimate_path
@@ -23,7 +30,7 @@ class DataLoader:
     
     def load_data(self):
         """
-        Load the dataset from the file system.
+        Load the dataset from the filesystem.
 
         Returns:
         --------

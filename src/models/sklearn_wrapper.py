@@ -13,7 +13,7 @@ from src.exceptions import NotSklearnModelError, SklearnInternalError
 class SklearnModelWrapper():
     """Scikit learn classifier wrapper class"""
 
-    def __init__(self, sklearn_classifier):
+    def __init__(self, model):
         """
         Constructs a wrapper around an scikit-learn classifier, or equivalent.
         It must implement predict_proba and fit function.
@@ -32,12 +32,12 @@ class SklearnModelWrapper():
             self: object
         """
        
-        if getattr(sklearn_classifier, "predict_proba", None) is None:
+        if getattr(model, "predict_proba", None) is None:
             raise NotSklearnModelError(
                 "Object does not implement predict_proba function"
             )
 
-        self._sklearn_classifier = sklearn_classifier
+        self._model = model
 
 
     def fit(self, X, y):
@@ -56,7 +56,7 @@ class SklearnModelWrapper():
             self: object
         """
         try:
-            self._sklearn_classifier.fit(X, y)
+            self._model.fit(X, y)
         except Exception as e:
             raise SklearnInternalError("Internal sklearn error.") from e
         return self
@@ -77,7 +77,7 @@ class SklearnModelWrapper():
                 Vector containing the class labels for each sample.
         """
         try:
-            y_pred = self._sklearn_classifier.predict_proba(X)
+            y_pred = self._model.predict_proba(X)
             return y_pred
         except Exception as e:
             raise SklearnInternalError("Internal sklearn error.") from e
@@ -109,7 +109,7 @@ class SklearnModelWrapper():
         file_exists(file_path)
 
         try:
-            self._sklearn_classifier = joblib.load(file_path)
+            self._model = joblib.load(file_path)
         except Exception as e:
             raise NotSklearnModelError("Error in loading model.") from e
         return self

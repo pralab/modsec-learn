@@ -17,8 +17,8 @@ class PyModSecurity():
     _BAD_STATUS_CODES = [401, 403]
     _GOOD_STATUS_CODES = list(range(200, 209))
     _SELECTED_RULES_FILES = [
-        "REQUEST-942-APPLICATION-ATTACK-SQLI.conf",
-        "REQUEST-949-BLOCKING-EVALUATION.conf"
+        'REQUEST-901-INITIALIZATION.conf',
+        'REQUEST-942-APPLICATION-ATTACK-SQLI.conf'
     ]
 
     def __init__(
@@ -58,30 +58,18 @@ class PyModSecurity():
         self._rules_logger_callback = None
         self._threshold             = threshold
         
-        base_path        = os.path.abspath(rules_dir)
-        config_rule_file = "./modsec_config/REQUEST-901-INITIALIZATION_PL{pl}_THR{thr}.conf"
-
-        # Load inizialization rules
-        self._rules.loadFromUri(
-            config_rule_file.format(pl=pl, thr=int(threshold))
-        )
-        
+        # Load the ModSecurity CRS configuration files
+        for conf_file in ['modsecurity.conf', f'crs-setup-pl{pl}.conf']:
+            config_path = os.path.join('./modsec_config', conf_file)
+            assert os.path.isfile(config_path)
+            self._rules.loadFromUri(config_path)
+    
         # Load the WAF rules
-        try:
-            for file_name in PyModSecurity._SELECTED_RULES_FILES:
-                self._rules.loadFromUri(os.path.join(base_path, file_name))
-        except OSError as error:
-            raise SystemExit(
-                "Error loading the rules for PyModsecurity: {}".format(error)
-            )
-        
-        # Check for parsing errors
-        error_str = self._rules.getParserError()
-        if error_str != '':
-            raise SystemExit(
-                "Error parsing the rules: {}".format(error_str)
-            )
-        
+        for file_name in PyModSecurity._SELECTED_RULES_FILES:
+            rule_path = os.path.join(os.path.abspath(rules_dir), file_name)
+            assert os.path.isfile(rule_path)
+            self._rules.loadFromUri(rule_path)
+                
         if output_type not in ['binary', 'score']:
             raise ValueError(
                 "Invalid value for mode input param: {}. Valid values are: ['binary', 'score']"
@@ -117,7 +105,7 @@ class PyModSecurity():
         # Process the payload using the ModSecurity CRS
         transaction = Transaction(self._modsec, self._rules)
         transaction.processURI(
-            "http://127.0.0.1:80?{}".format(payload), 
+            "http://127.0.0.1/test?{}".format(payload), 
             "GET", 
             "HTTP/1.1"
         )
@@ -190,10 +178,34 @@ class PyModSecurity():
             list
                 The list of the triggered rules.
         """
-        return self._rules_logger_cb.get_rules()
+        return self._rules_logger_cb.get_triggered_rules()
     
 
 class RulesLogger:
+    _SEVERITY_SCORE = {
+            2: 5,   # CRITICAL
+            3: 4,   # ERROR
+            4: 3,   # WARNING
+            5: 2    # NOTICE
+        }
+    
+    def _severity2score(self, severity):
+        """
+        Convert the severity to a score.
+
+        Parameters:
+        ----------
+            severity: int
+                The severity of the rule.
+        
+        Returns:
+        --------
+            score: float
+                The score of the severity.
+        """
+        return self._SEVERITY_SCORE[severity]
+    
+
     def __init__(self, threshold=5.0, regex_rules_filter=None, debug=False):
         """
         Constructor of RulesLogger class
@@ -235,22 +247,18 @@ class RulesLogger:
                 rule_message.m_phase,
                 rule_message.m_severity
             ))
-
-        if rule_message.m_ruleId == 949110:
-            self._score = float(
-                re.findall(r"\(Total Score: (\d+)\)",
-                str(rule_message.m_message))[0]
-            )
-    
+ 
         elif re.match(self._rules_filter, str(rule_message.m_ruleId)) and \
                 (str(rule_message.m_ruleId) not in self._rules_triggered):
             self._rules_triggered.append(str(rule_message.m_ruleId))
+
+        self._score += self._severity2score(rule_message.m_severity)
         
         if self._score >= self._threshold:
             self._status = 403
 
 
-    def get_rules(self):
+    def get_triggered_rules(self):
         """
         Get the rules triggered
         

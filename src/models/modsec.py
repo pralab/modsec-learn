@@ -101,7 +101,7 @@ class PyModSecurity():
 
         # Remove encoding from the payload
         payload = quote_plus(payload)
-
+        
         # Process the payload using the ModSecurity CRS
         transaction = Transaction(self._modsec, self._rules)
         transaction.processURI(

@@ -1,7 +1,3 @@
-"""
-A module defining custom exceptions.
-"""
-
 class NotSklearnModelError(Exception):
     """No sklearn model exception"""
 

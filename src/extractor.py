@@ -13,8 +13,8 @@ class ModSecurityFeaturesExtractor:
 
     def __init__(
             self,
-            crs_rules_ids_path,
-            crs_rules_path,
+            crs_ids_path,
+            crs_path,
             crs_threshold,
             crs_pl,
             features_path=None,
@@ -25,10 +25,10 @@ class ModSecurityFeaturesExtractor:
         
         Parameters:
         ----------
-            crs_rules_ids_path: str
-                The path to the JSON file containing the CRS rules IDs.
-            crs_rules_path: str
-                The path to the ModSecurity CRS rules file.
+            crs_ids_path: str
+                The path to the JSON file containing the CRS IDs.
+            crs_path: str
+                The path to the ModSecurity CRS file.
             crs_threshold: float
                 The threshold for ModSecurity WAF.
             crs_pl: int
@@ -42,19 +42,19 @@ class ModSecurityFeaturesExtractor:
         --------
             self: object
         """
-        type_check(crs_rules_path, str, "crs_rules_path")
+        type_check(crs_path, str, "crs_path")
         type_check(crs_threshold, float, "crs_threshold")
         type_check(crs_pl, int, "crs_pl")
         
         # Load CRS rules IDs from a file if provided
-        if crs_rules_ids_path is not None:
-            self._load_crs_rules_ids(crs_rules_ids_path)
+        if crs_ids_path is not None:
+            self._load_crs_rules_ids(crs_ids_path)
         else:
-            self._crs_rules_ids = list() 
+            self._crs_ids = list() 
 
-        self._crs_rules_ids_path = crs_rules_ids_path
+        self._crs_ids_path = crs_ids_path
         self._pymodsec           = PyModSecurity(
-            crs_rules_path,
+            crs_path,
             crs_threshold,
             crs_pl
         )
@@ -85,7 +85,7 @@ class ModSecurityFeaturesExtractor:
                 or load them from a file."
             )
 
-        num_rules = len(self._crs_rules_ids)
+        num_rules = len(self._crs_ids)
         X         = np.zeros((data.shape[0], num_rules))
         y         = data['labels']
 
@@ -93,7 +93,7 @@ class ModSecurityFeaturesExtractor:
             self._pymodsec._process_query(payload)
         
             for rule in self._pymodsec._get_triggered_rules():
-                X[idx, self._crs_rules_ids.index(rule)] = 1.0
+                X[idx, self._crs_ids.index(rule)] = 1.0
 
         if self._features_path is not None:
             self._save_features(X, self._features_path)
@@ -112,19 +112,19 @@ class ModSecurityFeaturesExtractor:
         """    
         payloads = data.drop('labels', axis=1)['payloads']
 
-        new_crs_rules_ids = set()
+        new_crs_ids = set()
         for payload in payloads:
             self._pymodsec._process_query(payload)
             triggered_rules = self._pymodsec._get_triggered_rules()
-            new_crs_rules_ids.update(triggered_rules)
+            new_crs_ids.update(triggered_rules)
 
         # Merge the new CRS rules IDs with the existing ones
-        self._crs_rules_ids = list(new_crs_rules_ids.union(set(self._crs_rules_ids)))
+        self._crs_ids = list(new_crs_ids.union(set(self._crs_ids)))
 
         if self._debug:
-            print(f"[DEBUG] All unique triggered rules: {self._crs_rules_ids}")
+            print(f"[DEBUG] All unique triggered rules: {self._crs_ids}")
 
-        if self._crs_rules_ids_path is not None:
+        if self._crs_ids_path is not None:
             self._save_crs_rules_ids()
 
 
@@ -147,23 +147,23 @@ class ModSecurityFeaturesExtractor:
         Save the CRS rules IDs into a JSON file.
         """
         
-        data = {"rules_ids": self._crs_rules_ids}
+        data = {"rules_ids": self._crs_ids}
         
-        with open(self._crs_rules_ids_path, 'w') as file:
+        with open(self._crs_ids_path, 'w') as file:
             json.dump(data, file, indent=4)
 
 
-    def _load_crs_rules_ids(self, crs_rules_ids_path):
+    def _load_crs_rules_ids(self, path):
         """
         Load the CRS rules IDs from a JSON file.
 
         Parameters:
         ----------
-            crs_rules_path: str
+            crs_path: str
                 The path to the JSON file containing the CRS rules IDs.
         """
-        if os.path.exists(crs_rules_ids_path):
-            with open(crs_rules_ids_path, 'r') as file:
-                self._crs_rules_ids = json.load(file)['rules_ids']
+        if os.path.exists(path):
+            with open(path, 'r') as file:
+                self._crs_ids = json.load(file)['rules_ids']
         else:
-            self._crs_rules_ids = list()
+            self._crs_ids = list()

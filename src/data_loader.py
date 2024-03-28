@@ -1,7 +1,3 @@
-"""
-A class to load the dataset from the filesystem.
-"""
-
 import pandas as pd
 
 

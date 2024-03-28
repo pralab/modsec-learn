@@ -1,7 +1,3 @@
-"""
-A class to extract features using ModSecurity WAF.
-"""
-
 import numpy as np
 import json
 import os
@@ -50,6 +46,7 @@ class ModSecurityFeaturesExtractor:
         type_check(crs_threshold, float, "crs_threshold")
         type_check(crs_pl, int, "crs_pl")
         
+        # Load CRS rules IDs from a file if provided
         if crs_rules_ids_path is not None:
             self._load_crs_rules_ids(crs_rules_ids_path)
         else:
@@ -115,13 +112,14 @@ class ModSecurityFeaturesExtractor:
         """    
         payloads = data.drop('labels', axis=1)['payloads']
 
-        crs_rules_ids = set()
+        new_crs_rules_ids = set()
         for payload in payloads:
             self._pymodsec._process_query(payload)
             triggered_rules = self._pymodsec._get_triggered_rules()
-            crs_rules_ids.update(triggered_rules)
+            new_crs_rules_ids.update(triggered_rules)
 
-        self._crs_rules_ids = list(crs_rules_ids)
+        # Merge the new CRS rules IDs with the existing ones
+        self._crs_rules_ids = list(new_crs_rules_ids.union(set(self._crs_rules_ids)))
 
         if self._debug:
             print(f"[DEBUG] All unique triggered rules: {self._crs_rules_ids}")
@@ -168,4 +166,4 @@ class ModSecurityFeaturesExtractor:
             with open(crs_rules_ids_path, 'r') as file:
                 self._crs_rules_ids = json.load(file)['rules_ids']
         else:
-            self._crs_rules_ids = set()
+            self._crs_rules_ids = list()

@@ -1,10 +1,10 @@
 import os
 import numpy as np
 
-from src.models import PyModSecurity, SklearnModelWrapper
+from src.models import PyModSecurity
 from src.data_loader import DataLoader
 from src.extractor import ModSecurityFeaturesExtractor
-from src.save_load_data import save_scores_and_labels
+from src.utils.dump import save_scores_and_labels
 from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
 from sklearn.metrics import roc_curve, roc_auc_score, auc
@@ -13,33 +13,31 @@ from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
 
 
-ROOT_PATH        = "."
+ROOT_PATH        = "./data/"
 CRS_RULES_DIR    = "./coreruleset/rules/"
 MODELS_BASE_PATH = ""
 DATASET_PATH     = '../modsec-test-dataset/'
-PL = 4
+PL               = 4
 
 if __name__ == '__main__':
 
     ##############
-    #DATA LOADING
+    # DATA LOADING
     ##############
     loader = DataLoader(
-        malicious_path = os.path.join(DATASET_PATH, 'malicious/sqli_15'),
-        legitimate_path = os.path.join(DATASET_PATH, 'legitimate/legitimate7')
+        malicious_path  = os.path.join(DATASET_PATH, 'malicious/sqli_14'),
+        legitimate_path = os.path.join(DATASET_PATH, 'legitimate/legitimate_7')
     )    
 
     data = loader.load_data()   
-    
-    
     data = shuffle(data) 
     
     ####################
     #FEATURE EXTRACTION
     ####################
     extractor = ModSecurityFeaturesExtractor(
-        crs_rules_ids_path=os.path.join(ROOT_PATH, 'crs_sqli_rules_ids1.json'),
-        crs_rules_path=CRS_RULES_DIR,
+        crs_ids_path=os.path.join(ROOT_PATH, 'crs_sqli_ids_4.0.0.json'),
+        crs_path=CRS_RULES_DIR,
         crs_threshold=5.0,
         crs_pl=PL
     )
@@ -62,9 +60,9 @@ if __name__ == '__main__':
 
     model.fit(xtr, ytr)
     
-    # ###################
-    # # PREDICTION MODEL
-    # ###################
+    ###################
+    # PREDICTION MODEL
+    ###################
 
     y_preds = model.predict(xts)
     y_scores = model.decision_function(xts)
@@ -89,7 +87,7 @@ if __name__ == '__main__':
     # SAVE DATA
     ##################
 
-    save_scores_and_labels(y_scores, y_scores_rf, yts, scores, file_name=f'./saved_data/scores_and_labels_pl_{PL}_waf_binary.pkl')
+    # save_scores_and_labels(y_scores, y_scores_rf, yts, scores, file_name=f'./saved_data/scores_and_labels_pl_{PL}_waf_binary.pkl')
 
     ##################
     # RESULT ANALYSIS

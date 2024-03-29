@@ -23,10 +23,11 @@ class PyModSecurity():
 
     def __init__(
             self,
-            rules_dir: str,
-            threshold=5.0,
-            pl=1,
-            output_type='binary'
+            rules_dir,
+            threshold   = 5.0,
+            pl          = 4,
+            output_type = 'score',
+            debug       = False
         ):
         """
         Constructor of PyModsecurity class
@@ -47,17 +48,27 @@ class PyModSecurity():
         type_check(pl, int, 'pl'),
         type_check(output_type, str, 'output_type')
 
+        # Check if the paranoia level is valid
         if not 1 <= pl <= 4:
             raise ValueError(
                 "Invalid value for pl input param: {}. Valid values are: [1, 2, 3, 4]"
                     .format(pl)
             )
-
+        
+        # Check if the output type is valid
+        if output_type not in ['binary', 'score']:
+            raise ValueError(
+                "Invalid value for mode input param: {}. Valid values are: ['binary', 'score']"
+                    .format(output_type)
+            )
+        
+        self._output_type           = output_type
         self._modsec                = ModSecurity()
         self._rules                 = RulesSet()
         self._rules_logger_callback = None
         self._threshold             = threshold
-        
+        self._debug                 = debug
+
         # Load the ModSecurity CRS configuration files
         for conf_file in ['modsecurity.conf', f'crs-setup-pl{pl}.conf']:
             config_path = os.path.join('./modsec_config', conf_file)
@@ -65,21 +76,15 @@ class PyModSecurity():
             self._rules.loadFromUri(config_path)
     
         # Load the WAF rules
-        for file_name in PyModSecurity._SELECTED_RULES_FILES:
-            rule_path = os.path.join(os.path.abspath(rules_dir), file_name)
+        for filename in PyModSecurity._SELECTED_RULES_FILES:
+            rule_path = os.path.join(os.path.abspath(rules_dir), filename)
             assert os.path.isfile(rule_path)
             self._rules.loadFromUri(rule_path)
-                
-        if output_type not in ['binary', 'score']:
-            raise ValueError(
-                "Invalid value for mode input param: {}. Valid values are: ['binary', 'score']"
-                    .format(output_type)
-            )
-        self._output_type = output_type
 
-        print("[INFO] Using ModSecurity CRS with PL = {} and INBOUND THRESHOLD = {}"
-                .format(pl, threshold)
-        )
+        if self._debug:
+            print("[INFO] Using ModSecurity CRS with PL = {} and INBOUND THRESHOLD = {}"
+                    .format(pl, threshold)
+            )
 
 
     def _process_query(self, payload: str):
@@ -91,12 +96,17 @@ class PyModSecurity():
             payload: str
                 The payload to process. 
         """
-        # Setting the callback for the rules logger
-        rules_logger_cb = RulesLogger(threshold=self._threshold)
+        # Create the rules logger
+        rules_logger_cb = RulesLogger(
+            threshold=self._threshold,
+            debug=self._debug
+        )
+        # Set the rules logger callback to the ModSecurity CRS
         self._modsec.setServerLogCb2(
             rules_logger_cb, 
-            LogProperty.RuleMessageLogProperty
+            LogProperty.RuleMessageLogProperty,
         )
+
         self._rules_logger_cb = rules_logger_cb
 
         # Remove encoding from the payload
@@ -155,12 +165,8 @@ class PyModSecurity():
             self._process_query(x)
             return self._process_response()
 
-        if isinstance(X, list):
+        if isinstance(X, list) or len(X.shape) == 1:
             scores = np.array([process_and_get_prediction(x) for x in X])
-
-        elif len(X.shape) == 1:
-            scores = np.array([process_and_get_prediction(x) for x in X])
-        
         else:
             raise ValueError(
             "Invalid input shape. Expected 1D array or list, got {}D array"
@@ -252,6 +258,7 @@ class RulesLogger:
                 (str(rule_message.m_ruleId) not in self._rules_triggered):
             self._rules_triggered.append(str(rule_message.m_ruleId))
 
+        # Update the score
         self._score += self._severity2score(rule_message.m_severity)
         
         if self._score >= self._threshold:

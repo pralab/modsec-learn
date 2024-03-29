@@ -1,1 +1,2 @@
-from .checker import type_check, file_exists
+from .checker import type_check
+from .plotting import plot_roc

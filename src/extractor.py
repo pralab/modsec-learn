@@ -15,10 +15,10 @@ class ModSecurityFeaturesExtractor:
             self,
             crs_ids_path,
             crs_path,
-            crs_threshold,
-            crs_pl,
-            features_path=None,
-            debug=False
+            crs_threshold = 5.0,
+            crs_pl        = 4,
+            features_path = None,
+            debug         = False
         ):
         """
         Constructor of ModSecurityFeaturesExtractor class.
@@ -53,7 +53,7 @@ class ModSecurityFeaturesExtractor:
             self._crs_ids = list() 
 
         self._crs_ids_path = crs_ids_path
-        self._pymodsec           = PyModSecurity(
+        self._pymodsec     = PyModSecurity(
             crs_path,
             crs_threshold,
             crs_pl
@@ -79,7 +79,7 @@ class ModSecurityFeaturesExtractor:
             y: np.ndarray
                 The class labels for the samples.
         """
-        if len(self._crs_rules_ids) == 0:
+        if len(self._crs_ids) == 0:
             raise ValueError(
                 "No CRS rules found, perform the extraction of CRS rules IDs \
                 or load them from a file."

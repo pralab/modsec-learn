@@ -1,39 +1,37 @@
 import os
-import numpy as np
 import matplotlib.pyplot as plt
+import toml
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.models import PyModSecurity
 from src.data_loader import DataLoader
 from src.extractor import ModSecurityFeaturesExtractor
 from src.utils.plotting import plot_roc
-from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
-from sklearn.metrics import roc_curve, roc_auc_score, auc
-from sklearn.utils import shuffle
 from sklearn.ensemble import RandomForestClassifier
-
-
-ROOT_PATH        = "./data/"
-CRS_RULES_DIR    = "./coreruleset/rules/"
-MODELS_BASE_PATH = ""
-DATASET_PATH     = '../modsec-test-dataset/'
-
-
-extract_ids = False
-paranoia_levels = [1, 2, 3, 4]
-models = ['svc', 'rf', 'modsec']
+from sklearn.utils import shuffle
+from sklearn.model_selection import train_test_split
 
 
 if __name__ == '__main__':
+    settings         = toml.load('config.toml')
+    crs_dir          = settings['crs_dir']
+    crs_ids_path     = settings['crs_ids_path']
+    models_path      = settings['models_path']
+    figures_path     = settings['figures_path']
+    dataset_path     = settings['dataset_path']
+    paranoia_levels  = settings['params']['paranoia_levels']
+    models           = settings['params']['models']
     
     # LOAD DATASET
     print('[INFO] Loading dataset...')
     loader = DataLoader(
-        malicious_path  = os.path.join(DATASET_PATH, 'malicious/sqli_14'),
-        legitimate_path = os.path.join(DATASET_PATH, 'legitimate/legitimate_7')
+        malicious_path  = os.path.join(dataset_path, 'malicious/sqli'),
+        legitimate_path = os.path.join(dataset_path, 'legitimate/legitimate')
     )    
     data = loader.load_data()
-    data = shuffle(data)
+    #data = shuffle(data)
 
     fig, axs = plt.subplots(2, 2)
     
@@ -41,15 +39,15 @@ if __name__ == '__main__':
         # FEATURE EXTRACTION 
         print('[INFO] Extracting features for PL {}...'.format(pl))
         extractor = ModSecurityFeaturesExtractor(
-            crs_ids_path = os.path.join(ROOT_PATH, 'crs_sqli_ids_4.0.0.json'),
-            crs_path     = CRS_RULES_DIR,
+            crs_ids_path = os.path.join(crs_ids_path, 'crs_sqli_ids_4.0.0.json'),
+            crs_path     = crs_dir,
             crs_pl       = pl
         )
     
         X, y = extractor.extract_features(data)
 
         xtr, xts, ytr, yts = \
-            train_test_split(X, y, test_size=0.2, random_state=77, shuffle=False)
+            train_test_split(X, y, test_size=0.2, random_state=77, shuffle=True)
                 
         # TRAINING / PREDICTION
         for model_name in models:
@@ -77,7 +75,7 @@ if __name__ == '__main__':
 
             elif model_name == 'modsec':
                 waf = PyModSecurity(
-                    rules_dir = CRS_RULES_DIR,
+                    rules_dir = crs_dir,
                     pl        = pl
                 )
                 xts_size = len(data) - len(xts)
@@ -104,5 +102,9 @@ if __name__ == '__main__':
     
     fig.set_size_inches(9, 9)
     fig.tight_layout()
-
-    plt.show()
+    fig.savefig(
+        os.path.join(figures_path, 'roc_curves.pdf'),
+        dpi         = 600,
+        format      = 'pdf',
+        bbox_inches = "tight"
+    )

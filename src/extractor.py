@@ -103,7 +103,9 @@ class ModSecurityFeaturesExtractor:
 
     def extract_crs_ids(self, data):
         """
-        Extract the unique CRS rules IDs for the provided dataset.
+        Extract the unique CRS rules IDs for the provided dataset. 
+        If the `crs_ids_path` is provided, the CRS IDs will be saved
+        into the filesystem.
 
         Parameters:
         ----------

@@ -1,0 +1,9 @@
+crs_dir      = "./coreruleset/rules/"
+crs_ids_path = "./data/"
+models_path  = "./data/models/"
+figures_path = './data/figures/'
+dataset_path = '../modsec-test-dataset/'
+
+[params]
+paranoia_levels = [1, 2, 3, 4]
+models          = ['svc', 'rf', 'modsec']

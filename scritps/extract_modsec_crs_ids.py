@@ -15,15 +15,15 @@ if __name__ == '__main__':
 
     # LOAD DATASET
     loader = DataLoader(
-        malicious_path  = os.path.join(dataset_path, 'malicious/sqli'),
-        legitimate_path = os.path.join(dataset_path, 'legitimate/legitimate')
-    )    
+        malicious_path  = '../modsec-test-dataset/malicious/sqli_dataset.json',
+        legitimate_path = '../modsec-test-dataset/legitimate/legitimate_dataset.json'
+    )     
 
     data = loader.load_data()   
 
     # EXTRACTS RULES IDS
     extractor = ModSecurityFeaturesExtractor(
-        crs_ids_path = os.path.join(crs_ids_path, 'crs_sqli_ids_4.0.0.json'),
+        crs_ids_path = crs_ids_path,
         crs_path     = crs_dir,
     )
 

@@ -2,6 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import toml
 import sys
+import numpy as np
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.models import PyModSecurity
@@ -10,11 +11,9 @@ from src.extractor import ModSecurityFeaturesExtractor
 from src.utils.plotting import plot_roc
 from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.utils import shuffle
-from sklearn.model_selection import train_test_split
 
 
-if __name__ == '__main__':
+if  __name__ == '__main__':
     settings         = toml.load('config.toml')
     crs_dir          = settings['crs_dir']
     crs_ids_path     = settings['crs_ids_path']
@@ -23,32 +22,41 @@ if __name__ == '__main__':
     dataset_path     = settings['dataset_path']
     paranoia_levels  = settings['params']['paranoia_levels']
     models           = settings['params']['models']
+    fig, axs         = plt.subplots(2, 2)
     
     # LOAD DATASET
     print('[INFO] Loading dataset...')
-    loader = DataLoader(
-        malicious_path  = os.path.join(dataset_path, 'malicious/sqli'),
-        legitimate_path = os.path.join(dataset_path, 'legitimate/legitimate')
-    )    
-    data = loader.load_data()
-    #data = shuffle(data)
 
-    fig, axs = plt.subplots(2, 2)
+    legitimate_train_path = os.path.join(dataset_path, 'legitimate_train.json')
+    malicious_train_path  = os.path.join(dataset_path, 'malicious_train.json')
+    legitimate_test_path  = os.path.join(dataset_path, 'legitimate_test.json')
+    malicious_test_path   = os.path.join(dataset_path, 'malicious_test.json')
+
+    loader = DataLoader(
+        malicious_path  = malicious_train_path,
+        legitimate_path = legitimate_train_path
+    )    
+    training_data = loader.load_data()
+
+    loader = DataLoader(
+        malicious_path  = malicious_test_path,
+        legitimate_path = legitimate_test_path
+    )    
+    test_data = loader.load_data()
     
     for pl in paranoia_levels:
         # FEATURE EXTRACTION 
         print('[INFO] Extracting features for PL {}...'.format(pl))
+        
         extractor = ModSecurityFeaturesExtractor(
-            crs_ids_path = os.path.join(crs_ids_path, 'crs_sqli_ids_4.0.0.json'),
+            crs_ids_path = crs_ids_path,
             crs_path     = crs_dir,
             crs_pl       = pl
         )
     
-        X, y = extractor.extract_features(data)
+        xtr, ytr = extractor.extract_features(training_data)
+        xts, yts = extractor.extract_features(test_data)
 
-        xtr, xts, ytr, yts = \
-            train_test_split(X, y, test_size=0.2, random_state=77, shuffle=True)
-                
         # TRAINING / PREDICTION
         for model_name in models:
             print('[INFO] Evaluating {} model for PL {}...'.format(model_name, pl))
@@ -78,8 +86,7 @@ if __name__ == '__main__':
                     rules_dir = crs_dir,
                     pl        = pl
                 )
-                xts_size = len(data) - len(xts)
-                y_scores = waf.predict(data['payloads'][xts_size:]) 
+                y_scores = waf.predict(test_data['payloads']) 
             
             plot_roc(
                 yts, 

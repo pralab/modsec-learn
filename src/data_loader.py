@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 
 
 class DataLoader:
@@ -33,15 +34,12 @@ class DataLoader:
             pd.DataFrame
                 The loaded dataset.
         """
-        legitimate_data = []
-        with open(self._legitimate_path, 'r') as file:
-            for line in file:
-                legitimate_data.append(line.strip())
         
-        malicious_data = []
+        with open(self._legitimate_path, 'r') as file:
+            legitimate_data= json.load(file)
+        
         with open(self._malicious_path, 'r') as file:
-            for line in file:            
-                malicious_data.append(line.strip())
+            malicious_data = json.load(file)
 
         malicious_labels  = [1] * len(malicious_data)
         legitimate_labels = [0] * len(legitimate_data)

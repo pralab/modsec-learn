@@ -1,8 +1,8 @@
 crs_dir      = "./coreruleset/rules/"
-crs_ids_path = "./data/"
+crs_ids_path = "./data/crs_sqli_ids_4.0.0.json"
 models_path  = "./data/models/"
 figures_path = './data/figures/'
-dataset_path = '../modsec-test-dataset/'
+dataset_path = './data/dataset/'
 
 [params]
 paranoia_levels = [1, 2, 3, 4]

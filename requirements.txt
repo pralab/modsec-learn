@@ -1,1 +1,6 @@
 numpy
+pandas
+matplotlib
+joblib
+sklearn
+toml

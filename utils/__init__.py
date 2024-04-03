@@ -1,1 +1,0 @@
-from .checker import type_check, file_exists

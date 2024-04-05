@@ -10,9 +10,6 @@ from src.models import PyModSecurity
 from src.data_loader import DataLoader
 from src.extractor import ModSecurityFeaturesExtractor
 from src.utils.plotting import plot_roc
-from sklearn.svm import LinearSVC
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression,ElasticNet, Lasso
 
 
 if  __name__ == '__main__':
@@ -23,8 +20,8 @@ if  __name__ == '__main__':
     figures_path     = settings['figures_path']
     dataset_path     = settings['dataset_path']
     paranoia_levels  = settings['params']['paranoia_levels']
-    linear_models    = settings['params']['linear_models']
     models           = settings['params']['models']
+    other_models     = settings['params']['other_models']
     penalties        = settings['params']['penalties']
     fig, axs         = plt.subplots(2, 2)
     zoom_axs         = dict()
@@ -61,7 +58,7 @@ if  __name__ == '__main__':
     
         xts, yts = extractor.extract_features(test_data)
 
-        for model_name in models:
+        for model_name in other_models:
             print('[INFO] Evaluating {} model for PL {}...'.format(model_name, pl))
                         
             if model_name == 'rf':
@@ -76,7 +73,6 @@ if  __name__ == '__main__':
                 )
                 y_scores = waf.predict(test_data['payloads'])
             
-
             plot_roc(
                 yts, 
                 y_scores, 
@@ -91,22 +87,20 @@ if  __name__ == '__main__':
                 pl                 = pl
             )
 
-        for model_name in linear_models:
+        for model_name in models:
             print('[INFO] Evaluating {} model for PL {}...'.format(model_name, pl))
 
             for penalty in penalties:
                 if model_name == 'svc':
-                    model = joblib.load(os.path.join(models_path, 'linear_svc_pl{}_{}.joblib'.format(pl, penalty)))
+                    model    = joblib.load(os.path.join(models_path, 'linear_svc_pl{}_{}.joblib'.format(pl, penalty)))
                     y_preds  = model.predict(xts)
                     y_scores = model.decision_function(xts)
                     
-
                 elif model_name == 'log_reg':
-                    model = joblib.load(os.path.join(models_path, 'log_reg_pl{}_{}.joblib'.format(pl, penalty)))
+                    model    = joblib.load(os.path.join(models_path, 'log_reg_pl{}_{}.joblib'.format(pl, penalty)))
                     y_preds  = model.predict(xts)
                     y_scores = model.predict_proba(xts)[:, 1]
                     
-
                 plot_roc(
                     yts, 
                     y_scores, 
@@ -130,7 +124,7 @@ if  __name__ == '__main__':
     fig.set_size_inches(15, 15)
     fig.tight_layout(pad=2.0)
     fig.savefig(
-        os.path.join(figures_path, 'roc_curves_zoom1.pdf'),
+        os.path.join(figures_path, 'roc_curves.pdf'),
         dpi         = 600,
         format      = 'pdf',
         bbox_inches = "tight"

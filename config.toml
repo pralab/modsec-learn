@@ -1,11 +1,12 @@
-crs_dir      = "./coreruleset/rules/"
-crs_ids_path = "./data/crs_sqli_ids_4.0.0.json"
-models_path  = "./data/models/"
-figures_path = './data/figures/'
-dataset_path = './data/dataset/'
+crs_dir          = "./coreruleset/rules/"
+crs_ids_path     = "./data/crs_sqli_ids_4.0.0.json"
+crs_weights_path = "./data/crs_sqli_weights_4.0.0.json"
+models_path      = "./data/models/"
+figures_path     = './data/figures/'
+dataset_path     = './data/dataset/'
 
 [params]
 paranoia_levels = [1, 2, 3, 4]
-linear_models   = ['svc', 'log_reg']
-models          = ['rf', 'modsec']
+models          = ['svc', 'log_reg']
+other_models    = ['rf', 'modsec']
 penalties       = ['l1', 'l2']

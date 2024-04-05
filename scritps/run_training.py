@@ -19,8 +19,8 @@ if __name__        == '__main__':
     figures_path     = settings['figures_path']
     dataset_path     = settings['dataset_path']
     paranoia_levels  = settings['params']['paranoia_levels']
-    models           = list(filter(lambda model: model != 'modsec', settings['params']['models']))
-    models           += settings['params']['linear_models']
+    models           = list(filter(lambda model: model != 'modsec', settings['params']['other_models']))
+    models           += settings['params']['models']
     penalties        = settings['params']['penalties']
 
     # LOAD DATASET
@@ -99,5 +99,3 @@ if __name__        == '__main__':
                         model, 
                         os.path.join(models_path, 'log_reg_pl{}_{}.joblib'.format(pl, penalty))
                     )
-            
-        

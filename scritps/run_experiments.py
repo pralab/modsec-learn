@@ -5,12 +5,14 @@ import sys
 import numpy as np
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+from src.utils.save_load_data import save_scores_and_labels
 from src.models import PyModSecurity
 from src.data_loader import DataLoader
 from src.extractor import ModSecurityFeaturesExtractor
 from src.utils.plotting import plot_roc
 from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 
 
 if  __name__ == '__main__':
@@ -23,6 +25,7 @@ if  __name__ == '__main__':
     paranoia_levels  = settings['params']['paranoia_levels']
     models           = settings['params']['models']
     fig, axs         = plt.subplots(2, 2)
+    zoom_axs         = dict()
     
     # LOAD DATASET
     print('[INFO] Loading dataset...')
@@ -44,6 +47,7 @@ if  __name__ == '__main__':
     )    
     test_data = loader.load_data()
     
+    # FEATURE EXTRACTION / TRAINING / PREDICTION
     for pl in paranoia_levels:
         # FEATURE EXTRACTION 
         print('[INFO] Extracting features for PL {}...'.format(pl))
@@ -63,11 +67,16 @@ if  __name__ == '__main__':
             
             if model_name == 'svc':
                 model = LinearSVC(
+                    C             = 0.5,
+                    penalty       = 'l1',
+                    dual          = False,
                     class_weight  = 'balanced',
                     random_state  = 77,
                     fit_intercept = False,
+                    max_iter      = 1000
                 )
                 model.fit(xtr, ytr)
+                print('number of zeros \n',np.count_nonzero(model.coef_== 0.0))
                 y_preds  = model.predict(xts)
                 y_scores = model.decision_function(xts)
             
@@ -80,23 +89,42 @@ if  __name__ == '__main__':
                 model.fit(xtr, ytr)
                 y_preds  = model.predict(xts)
                 y_scores = model.predict_proba(xts)[:, 1]
+                
+            elif model_name == 'log_reg':
+                model = LogisticRegression(
+                    C            = 0.5,
+                    penalty      = 'l1',
+                    dual         = False,
+                    class_weight = 'balanced',
+                    random_state = 77,
+                    n_jobs       = -1,
+                    max_iter     = 1000,
+                    solver       = 'saga'
+                )
+                model.fit(xtr, ytr)
+                y_preds  = model.predict(xts)
+                y_scores = model.predict_proba(xts)[:, 1]
 
             elif model_name == 'modsec':
                 waf = PyModSecurity(
                     rules_dir = crs_dir,
                     pl        = pl
                 )
-                y_scores = waf.predict(test_data['payloads']) 
-            
+                y_scores= waf.predict(test_data['payloads']) 
+
+            # PLOT ROC CURVE
             plot_roc(
                 yts, 
                 y_scores, 
                 label_legend       = model_name.upper(),
                 ax                 = axs.flatten()[pl-1],
                 plot_rand_guessing = False,
-                log_scale          = True ,
-                legend_settings    = {'loc': 'lower right'},
-                update_roc_values  = True if pl == 1 else False
+                log_scale          = True,
+                legend_settings    = {'loc': 'lower left', 'fontsize': 'small'},
+                update_roc_values  = True if pl == 1 else False,
+                include_zoom       = True,
+                zoom_axs           = zoom_axs,
+                pl                 = pl
             )
 
     # Final settings for the plot
@@ -106,11 +134,12 @@ if  __name__ == '__main__':
         ax.yaxis.set_tick_params(labelsize=14)
         ax.xaxis.label.set_size(16)
         ax.yaxis.label.set_size(16)
-    
-    fig.set_size_inches(9, 9)
-    fig.tight_layout()
+        
+    fig.set_size_inches(15, 15)
+    fig.tight_layout(pad=2.0)
+    plt.show()
     fig.savefig(
-        os.path.join(figures_path, 'roc_curves.pdf'),
+        os.path.join(figures_path, 'roc_curves_zoom.pdf'),
         dpi         = 600,
         format      = 'pdf',
         bbox_inches = "tight"

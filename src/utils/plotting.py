@@ -1,6 +1,8 @@
 import numpy as np
 
 from sklearn.metrics import roc_curve, roc_auc_score, auc
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 
 
 def update_roc(fpr, tpr):
@@ -51,7 +53,10 @@ def plot_roc(
     plot_rand_guessing = True,
     log_scale          = False,
     legend_settings    = None,
-    update_roc_values  = False
+    update_roc_values  = False,
+    include_zoom       = False,
+    zoom_axs           = None,
+    pl                 = None
 ):   
     """
     Plot the ROC curve for a given model.
@@ -74,8 +79,15 @@ def plot_roc(
         Dictionary with the legend settings.
     update_roc_values: bool
         Whether to update the ROC values, only for ModSecurity PL1.
-    """ 
-    auc = roc_auc_score(y_true, y_scores)
+    include_zoom: bool
+        Whether to include the zoomed ROC curve.
+    zoom_axs: dict
+        Dictionary with the zoomed axes.
+    pl: int
+        Paranoia level.
+    """
+    # Compute partial AUC (1%)
+    auc = roc_auc_score(y_true, y_scores, max_fpr=0.01)
     fpr, tpr, _ = roc_curve(y_true, y_scores)
     
     # Update ROC values (FPR, TPR) when matplotlib fails to interpolate 
@@ -88,12 +100,39 @@ def plot_roc(
     else:
         ax.set_xlim([-0.05, 1.05])
 
-    ax.plot(fpr, tpr, label=label_legend + f' (AUC = {auc:.3f})')
+    if plot_rand_guessing:
+        ax.plot([0, 1], [0, 1], color="navy", lw=2, linestyle="--")
+
+    # Plot ROC curve
+    ax.plot(fpr, tpr, label=label_legend + f' (AUC 1% = {auc:.3f})')
+
+    # Plot zoomed ROC curve
+    if include_zoom:
+        if pl not in zoom_axs:
+            zoom_axs[pl] = ax.inset_axes([0.5, 0.1, 0.3, 0.3])
+    
+        if pl == 1:
+            zoom_axs[pl].set_xlim([3e-4, 2e-3])
+            zoom_axs[pl].set_ylim([0.85, 0.96])
+        else:    
+            zoom_axs[pl].set_xlim([5e-4, 1e-3]) 
+            zoom_axs[pl].set_ylim([0.95, 1]) 
+
+        if log_scale:
+            zoom_axs[pl].set_xscale('log')
+        else:
+            zoom_axs[pl].set_xlim([-0.05, 1.05])
+
+        zoom_axs[pl].plot(fpr, tpr)
+
+        zoom_axs[pl].set_xticklabels([])
+        zoom_axs[pl].set_yticklabels([])
+
+        ax.indicate_inset_zoom(zoom_axs[pl], edgecolor="grey")
+
+    # Final settings for the plot
     ax.set_ylim([-0.05, 1.05])
     ax.set_xlabel("False Positive Rate (FPR)", fontsize=14)
     ax.set_ylabel("True Positive Rate (TPR)", fontsize=14)
     ax.grid(True)
     ax.legend(**legend_settings)
-
-    if plot_rand_guessing:
-        ax.plot([0, 1], [0, 1], color="navy", lw=2, linestyle="--")

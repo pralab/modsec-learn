@@ -1,3 +1,8 @@
+"""
+This script is used to extract the CRS IDs from the ModSecurity Core Rule Set (CRS)
+and save them into a JSON file.
+"""
+
 import os
 import toml
 import sys
@@ -18,7 +23,6 @@ if __name__ == '__main__':
         malicious_path  = '../modsec-test-dataset/malicious/sqli_dataset.json',
         legitimate_path = '../modsec-test-dataset/legitimate/legitimate_dataset.json'
     )     
-
     data = loader.load_data()   
 
     # EXTRACTS RULES IDS

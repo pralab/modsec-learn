@@ -1,3 +1,11 @@
+"""
+This script is used to build a dataset for the training/testing phase composed
+by 25k samples of malicious and 25k samples of legitimate payloads. 
+The training and testing are splitted in 80% and 20% respectively. 
+The dataset is built starting from the full dataset available in the following
+repository https://github.com/christianscano/modsec-test-dataset/tree/main
+"""
+
 import os
 import toml
 import sys
@@ -5,7 +13,6 @@ import json
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.data_loader import DataLoader
-from src.extractor import ModSecurityFeaturesExtractor
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 

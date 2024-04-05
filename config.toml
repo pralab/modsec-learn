@@ -6,5 +6,6 @@ dataset_path = './data/dataset/'
 
 [params]
 paranoia_levels = [1, 2, 3, 4]
-models          = ['svc', 'rf', 'log_reg', 'modsec']
+linear_models   = ['svc', 'log_reg']
+models          = ['rf', 'modsec']
 penalties       = ['l1', 'l2']

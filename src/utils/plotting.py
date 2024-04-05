@@ -109,25 +109,21 @@ def plot_roc(
     # Plot zoomed ROC curve
     if include_zoom:
         if pl not in zoom_axs:
-            zoom_axs[pl] = ax.inset_axes([0.5, 0.1, 0.3, 0.3])
-    
+            zoom_axs[pl] = ax.inset_axes(
+                [0.5, 0.1, 0.3, 0.3], 
+                xticklabels = [], 
+                yticklabels = []
+            )
+         
         if pl == 1:
             zoom_axs[pl].set_xlim([3e-4, 2e-3])
             zoom_axs[pl].set_ylim([0.85, 0.96])
         else:    
             zoom_axs[pl].set_xlim([5e-4, 1e-3]) 
             zoom_axs[pl].set_ylim([0.95, 1]) 
-
-        if log_scale:
-            zoom_axs[pl].set_xscale('log')
-        else:
-            zoom_axs[pl].set_xlim([-0.05, 1.05])
-
+      
         zoom_axs[pl].plot(fpr, tpr)
-
-        zoom_axs[pl].set_xticklabels([])
-        zoom_axs[pl].set_yticklabels([])
-
+        
         ax.indicate_inset_zoom(zoom_axs[pl], edgecolor="grey")
 
     # Final settings for the plot

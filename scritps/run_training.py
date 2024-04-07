@@ -1,3 +1,8 @@
+"""
+This script is used to train the models with different paranoia levels and penalties.
+The trained models are saved as joblib files in the models directory.
+"""
+
 import toml
 import os
 import sys
@@ -20,10 +25,10 @@ if __name__        == '__main__':
     dataset_path     = settings['dataset_path']
     paranoia_levels  = settings['params']['paranoia_levels']
     models           = list(filter(lambda model: model != 'modsec', settings['params']['other_models']))
-    models           += settings['params']['models']
+    models           +=settings['params']['models']
     penalties        = settings['params']['penalties']
 
-    # LOAD DATASET
+    # LOADING DATASET PHASE
     print('[INFO] Loading dataset...')
     
     loader = DataLoader(
@@ -35,7 +40,7 @@ if __name__        == '__main__':
     models_weights = dict()
     
     for pl in paranoia_levels:
-        # FEATURE EXTRACTION 
+        # FEATURE EXTRACTION PHASE
         print('[INFO] Extracting features for PL {}...'.format(pl))
         
         extractor = ModSecurityFeaturesExtractor(
@@ -46,7 +51,7 @@ if __name__        == '__main__':
     
         xtr, ytr = extractor.extract_features(training_data)
 
-        # TRAINING / PREDICTION
+        # TRAINING PHASE
         for model_name in models:
             print('[INFO] Training {} model for PL {}...'.format(model_name, pl))
             

@@ -1,3 +1,7 @@
+"""
+This script is used to plot the ROC curves for the pretrained ML models and the ModSecurity WAF.
+"""
+
 import os
 import matplotlib.pyplot as plt
 import toml
@@ -26,7 +30,7 @@ if  __name__ == '__main__':
     fig, axs         = plt.subplots(2, 2)
     zoom_axs         = dict()
     
-    # LOAD DATASET
+    # LOADING DATASET PHASE
     print('[INFO] Loading dataset...')
 
     legitimate_train_path = os.path.join(dataset_path, 'legitimate_train.json')
@@ -46,7 +50,7 @@ if  __name__ == '__main__':
     )    
     test_data = loader.load_data()
     
-    # FEATURE EXTRACTION / TRAINING / PREDICTION
+    # STARTING EXPERIMENTS
     for pl in paranoia_levels:
         print('[INFO] Extracting features for PL {}...'.format(pl))
         
@@ -62,8 +66,9 @@ if  __name__ == '__main__':
             print('[INFO] Evaluating {} model for PL {}...'.format(model_name, pl))
                         
             if model_name == 'rf':
-                model       = joblib.load(os.path.join(models_path, 'rf_pl{}.joblib'.format(pl)))
-                y_preds     = model.predict(xts)
+                model       = joblib.load(
+                    os.path.join(models_path, 'rf_pl{}.joblib'.format(pl))
+                )
                 y_scores    = model.predict_proba(xts)[:, 1]
                 
             elif model_name == 'modsec':
@@ -71,7 +76,7 @@ if  __name__ == '__main__':
                     rules_dir = crs_dir,
                     pl        = pl
                 )
-                y_scores = waf.predict(test_data['payloads'])
+                y_scores = waf.predict(test_data['payload'])
             
             plot_roc(
                 yts, 
@@ -93,12 +98,10 @@ if  __name__ == '__main__':
             for penalty in penalties:
                 if model_name == 'svc':
                     model    = joblib.load(os.path.join(models_path, 'linear_svc_pl{}_{}.joblib'.format(pl, penalty)))
-                    y_preds  = model.predict(xts)
                     y_scores = model.decision_function(xts)
                     
                 elif model_name == 'log_reg':
                     model    = joblib.load(os.path.join(models_path, 'log_reg_pl{}_{}.joblib'.format(pl, penalty)))
-                    y_preds  = model.predict(xts)
                     y_scores = model.predict_proba(xts)[:, 1]
                     
                 plot_roc(
@@ -116,11 +119,6 @@ if  __name__ == '__main__':
                 )
 
     # Final settings for the plot
-    for idx, ax in enumerate(axs.flatten()):
-        ax.set_title('PL {}'.format(idx+1), fontsize=16)
-        ax.xaxis.label.set_size(16)
-        ax.yaxis.label.set_size(16)
-        
     fig.set_size_inches(15, 15)
     fig.tight_layout(pad=2.0)
     fig.savefig(

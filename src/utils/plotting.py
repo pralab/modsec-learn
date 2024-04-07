@@ -1,8 +1,6 @@
 import numpy as np
 
-from sklearn.metrics import roc_curve, roc_auc_score, auc
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+from sklearn.metrics import roc_curve, roc_auc_score
 
 
 def update_roc(fpr, tpr):
@@ -120,14 +118,14 @@ def plot_roc(
             zoom_axs[pl].set_ylim([0.85, 0.96])
         else:    
             zoom_axs[pl].set_xlim([5e-4, 1e-3]) 
-            zoom_axs[pl].set_ylim([0.95, 1]) 
+            zoom_axs[pl].set_ylim([0.95, 1.00]) 
       
         zoom_axs[pl].plot(fpr, tpr)
         
         ax.indicate_inset_zoom(zoom_axs[pl], edgecolor="grey")
 
-    # Final settings for the plot
-    ax.set_ylim([-0.05, 1.05])
+    # Other settings
+    ax.set_ylim([0.20, 1.05])
     ax.set_xlabel("False Positive Rate (FPR)", fontsize=14)
     ax.set_ylabel("True Positive Rate (TPR)", fontsize=14)
     ax.grid(True)

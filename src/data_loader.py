@@ -47,6 +47,6 @@ class DataLoader:
         combined_labels   = malicious_labels + legitimate_labels
 
         return pd.DataFrame({
-            'payloads': combined_data,
-            'labels': combined_labels
+            'payload': combined_data,
+            'label': combined_labels
         })

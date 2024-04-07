@@ -1,9 +1,13 @@
+"""
+This script is used to create a graphical comparison of the weights assigned to the CRS rules 
+by the ML models with L1 and L2 regularization and the ModSecurity WAF.
+"""
+
 import toml
 import os
 import sys
 import joblib
 import matplotlib.pyplot as plt
-import seaborn as sns
 import seaborn.objects as so
 import numpy as np
 import pandas as pd
@@ -24,20 +28,52 @@ def analyze_weights(
     axis_labels_size = 16,
     tick_labels_size = 14
 ):
+    """
+    Analyze the assigned weights for the ML models with L1 and L2 regularization
+    and ModSecurity WAF. The weights are compared for each CRS rule.
 
+    Parameters
+    ----------
+    model_name: str
+        The name of the model.
+    model_l1: sklearn.linear_model
+        The model with L1 regularization.
+    model_l2: sklearn.linear_model
+        The model with L2 regularization.
+    crs_ids: list
+        A list with the CRS IDs.
+    crs_weights: dict
+        A dictionary with the weights of the CRS rules.
+    figure_path: str
+        The path to save the figure.
+    legend_fontsize: int
+        The font size of the legend.
+    axis_labels_size: int
+        The font size of the axis labels.
+    tick_labels_size: int
+        The font size of the tick labels.
+    """
+    # Extract the weights from the models
     model_l1_weights = model_l1.coef_.flatten()
     model_l2_weights = model_l2.coef_.flatten()
 
     modsec_weights = np.array([int(crs_weights[rule]) for rule in crs_ids])
-    modsec_weights = np.append(modsec_weights, 0)
-    modsec_weights = minmax_scale(modsec_weights, feature_range=(0, model_l1_weights.max()))
+    # Needed to scale correctly ModSec weights, it will not be used for the plot
+    modsec_weights = np.append(modsec_weights, 0) 
+    modsec_weights = minmax_scale(
+        modsec_weights, 
+        feature_range = (0, model_l1_weights.max())
+    )
 
     fig, axs = plt.subplots(1, 1)
     
+    # Create the DataFrame for the plot
     df_plot = pd.DataFrame(
         {
             'rules': crs_ids * 3,
-            'weight': modsec_weights.tolist()[:-1] + model_l1_weights.tolist() + model_l2_weights.tolist(),
+            'weight': modsec_weights.tolist()[:-1] + 
+                      model_l1_weights.tolist() + 
+                      model_l2_weights.tolist(),
             'type': ['ModSec'] * len(crs_ids) + 
                     [f'{model_name} - L1'] * len(crs_ids) + 
                     [f'{model_name} - L2'] * len(crs_ids)
@@ -59,23 +95,23 @@ def analyze_weights(
 
     axs.set_xticklabels(
         [rule[3:] for rule in crs_ids], 
-        rotation=75,
-        ha='right',
-        rotation_mode='anchor'
+        rotation      = 75,
+        ha            = 'right',
+        rotation_mode = 'anchor'
     )
     axs.legend(
         legend.legendHandles, 
         [t.get_text() for t in legend.texts], 
-        loc='lower right', 
-        fancybox=True,
-        shadow=False,
-        fontsize=legend_fontsize
+        loc      = 'lower right',
+        fancybox = True,
+        shadow   = False,
+        fontsize = legend_fontsize
     )
     
     axs.set_xlabel('CRS SQLi Rules', fontsize=axis_labels_size, labelpad=10)
     axs.set_ylabel('Weight', fontsize=axis_labels_size, labelpad=10)
     axs.set_xmargin(0.05)
-    axs.set_ymargin(0.3)
+    axs.set_ymargin(0.2)
     axs.xaxis.set_tick_params(labelsize=tick_labels_size)
     axs.yaxis.set_tick_params(labelsize=tick_labels_size)
     

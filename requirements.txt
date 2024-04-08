@@ -4,3 +4,4 @@ matplotlib
 joblib
 sklearn
 toml
+seaborn

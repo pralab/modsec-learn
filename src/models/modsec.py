@@ -197,7 +197,7 @@ class RulesLogger:
     
     def _severity2score(self, severity):
         """
-        Convert the severity to a score.
+        Convert a severity level to a score.
 
         Parameters:
         ----------

@@ -1,9 +1,16 @@
-crs_dir      = "./coreruleset/rules/"
-crs_ids_path = "./data/crs_sqli_ids_4.0.0.json"
-models_path  = "./data/models/"
-figures_path = './data/figures/'
-dataset_path = './data/dataset/'
+crs_dir          = "./coreruleset/rules/"
+crs_ids_path     = "./data/crs_sqli_ids_4.0.0.json"
+crs_weights_path = "./data/crs_sqli_weights_4.0.0.json"
+models_path      = "./data/models/"
+figures_path     = './data/figures/'
+dataset_path     = './data/dataset/'
+malicious_path   = '../modsec-test-dataset/malicious/sqli_dataset.json'
+legitimate_path  = '../modsec-test-dataset/legitimate/legitimate_dataset.json'
 
 [params]
 paranoia_levels = [1, 2, 3, 4]
-models          = ['svc', 'rf', 'modsec']
+# Models that accept the 'penalty' parameter 
+models          = ['svc', 'log_reg']
+# Models that doesn't accept the 'penalty' parameter
+other_models    = ['rf', 'modsec']
+penalties       = ['l1', 'l2']

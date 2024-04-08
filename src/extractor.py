@@ -12,14 +12,13 @@ class ModSecurityFeaturesExtractor:
     """
 
     def __init__(
-            self,
-            crs_ids_path,
-            crs_path,
-            crs_threshold = 5.0,
-            crs_pl        = 4,
-            features_path = None,
-            debug         = False
-        ):
+        self,
+        crs_ids_path,
+        crs_path,
+        crs_threshold = 5.0,
+        crs_pl        = 4,
+        features_path = None,
+    ):
         """
         Constructor of ModSecurityFeaturesExtractor class.
         
@@ -35,8 +34,6 @@ class ModSecurityFeaturesExtractor:
                 The paranoia level for ModSecurity WAF.
             features_path: str
                 The path to the file to save the features.
-            debug: bool
-                Debug mode
                 
         Returns:
         --------
@@ -59,7 +56,6 @@ class ModSecurityFeaturesExtractor:
             crs_pl
         )
         self._features_path      = features_path
-        self._debug              = debug
 
 
     def extract_features(self, data):
@@ -87,9 +83,9 @@ class ModSecurityFeaturesExtractor:
 
         num_rules = len(self._crs_ids)
         X         = np.zeros((data.shape[0], num_rules))
-        y         = data['labels']
+        y         = data['label']
 
-        for idx, payload in enumerate(data['payloads']):  
+        for idx, payload in enumerate(data['payload']):  
             self._pymodsec._process_query(payload)
         
             for rule in self._pymodsec._get_triggered_rules():
@@ -112,7 +108,7 @@ class ModSecurityFeaturesExtractor:
             data: pandas DataFrame
                 The dataset to extract the unique CRS rules IDs from.
         """    
-        payloads = data.drop('labels', axis=1)['payloads']
+        payloads = data.drop('label', axis=1)['payload']
 
         new_crs_ids = set()
         for payload in payloads:
@@ -121,10 +117,7 @@ class ModSecurityFeaturesExtractor:
             new_crs_ids.update(triggered_rules)
 
         # Merge the new CRS rules IDs with the existing ones
-        self._crs_ids = list(new_crs_ids.union(set(self._crs_ids)))
-
-        if self._debug:
-            print(f"[DEBUG] All unique triggered rules: {self._crs_ids}")
+        self._crs_ids = sorted(list(new_crs_ids.union(set(self._crs_ids))))
 
         if self._crs_ids_path is not None:
             self._save_crs_rules_ids()

@@ -66,12 +66,14 @@ if  __name__ == '__main__':
             print('[INFO] Evaluating {} model for PL {}...'.format(model_name, pl))
                         
             if model_name == 'rf':
+                label_legend = 'RF'
                 model       = joblib.load(
                     os.path.join(models_path, 'rf_pl{}.joblib'.format(pl))
                 )
                 y_scores    = model.predict_proba(xts)[:, 1]
                 
             elif model_name == 'modsec':
+                label_legend = 'ModSec'
                 waf = PyModSecurity(
                     rules_dir = crs_dir,
                     pl        = pl
@@ -81,7 +83,7 @@ if  __name__ == '__main__':
             plot_roc(
                 yts, 
                 y_scores, 
-                label_legend       = model_name.upper(),
+                label_legend       = label_legend,
                 ax                 = axs.flatten()[pl-1],
                 plot_rand_guessing = False,
                 log_scale          = True,
@@ -97,21 +99,27 @@ if  __name__ == '__main__':
 
             for penalty in penalties:
                 if model_name == 'svc':
-                    model    = joblib.load(os.path.join(models_path, 'linear_svc_pl{}_{}.joblib'.format(pl, penalty)))
+                    label_legend = 'SVM'
+                    model    = joblib.load(
+                        os.path.join(models_path, 'linear_svc_pl{}_{}.joblib'.format(pl, penalty))
+                    )
                     y_scores = model.decision_function(xts)
                     
                 elif model_name == 'log_reg':
-                    model    = joblib.load(os.path.join(models_path, 'log_reg_pl{}_{}.joblib'.format(pl, penalty)))
+                    label_legend = 'LR'
+                    model    = joblib.load(
+                        os.path.join(models_path, 'log_reg_pl{}_{}.joblib'.format(pl, penalty))
+                    )
                     y_scores = model.predict_proba(xts)[:, 1]
                     
                 plot_roc(
                     yts, 
                     y_scores, 
-                    label_legend       = f'{model_name.upper()} - {penalty.upper()}',
+                    label_legend       = label_legend,
                     ax                 = axs.flatten()[pl-1],
                     plot_rand_guessing = False,
                     log_scale          = True,
-                    legend_settings    = {'loc': 'lower left', 'fontsize': 'small'},
+                    legend_settings    = {'loc': 'lower left', 'fontsize': '14'},
                     update_roc_values  = True if pl == 1 else False,
                     include_zoom       = True,
                     zoom_axs           = zoom_axs,
@@ -119,7 +127,7 @@ if  __name__ == '__main__':
                 )
 
     # Final settings for the plot
-    fig.set_size_inches(15, 15)
+    fig.set_size_inches(16, 16)
     fig.tight_layout(pad=2.0)
     fig.savefig(
         os.path.join(figures_path, 'roc_curves.pdf'),

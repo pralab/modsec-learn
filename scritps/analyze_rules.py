@@ -24,9 +24,9 @@ def analyze_weights(
     crs_ids,
     crs_weights,
     figure_path,
-    legend_fontsize  = 13,
-    axis_labels_size = 16,
-    tick_labels_size = 14
+    legend_fontsize  = 16,
+    axis_labels_size = 18,
+    tick_labels_size = 16
 ):
     """
     Analyze the assigned weights for the ML models with L1 and L2 regularization
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     )
 
     analyze_weights(
-        'SVC',
+        'SVM',
         model_l1,
         model_l2,
         crs_ids,
@@ -174,7 +174,7 @@ if __name__ == '__main__':
     )
 
     analyze_weights(
-        'Logistic Regression',
+        'LR',
         model_l1,
         model_l2,
         crs_ids,

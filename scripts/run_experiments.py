@@ -87,7 +87,6 @@ if  __name__ == '__main__':
                 ax                 = axs.flatten()[pl-1],
                 plot_rand_guessing = False,
                 log_scale          = True,
-                legend_settings    = {'loc': 'lower left', 'fontsize': 'small'},
                 update_roc_values  = True if pl == 1 else False,
                 include_zoom       = True,
                 zoom_axs           = zoom_axs,
@@ -99,14 +98,14 @@ if  __name__ == '__main__':
 
             for penalty in penalties:
                 if model_name == 'svc':
-                    label_legend = 'SVM'
+                    label_legend = f'SVM - {penalty.upper()}'
                     model    = joblib.load(
                         os.path.join(models_path, 'linear_svc_pl{}_{}.joblib'.format(pl, penalty))
                     )
                     y_scores = model.decision_function(xts)
                     
                 elif model_name == 'log_reg':
-                    label_legend = 'LR'
+                    label_legend = f'LR - {penalty.upper()}'
                     model    = joblib.load(
                         os.path.join(models_path, 'log_reg_pl{}_{}.joblib'.format(pl, penalty))
                     )
@@ -119,7 +118,6 @@ if  __name__ == '__main__':
                     ax                 = axs.flatten()[pl-1],
                     plot_rand_guessing = False,
                     log_scale          = True,
-                    legend_settings    = {'loc': 'lower left', 'fontsize': '14'},
                     update_roc_values  = True if pl == 1 else False,
                     include_zoom       = True,
                     zoom_axs           = zoom_axs,
@@ -127,7 +125,26 @@ if  __name__ == '__main__':
                 )
 
     # Final settings for the plot
-    fig.set_size_inches(16, 16)
+    for idx, ax in enumerate(axs.flatten()):
+        ax.set_title('PL {}'.format(idx+1), fontsize=20)
+        ax.xaxis.set_tick_params(labelsize=15)
+        ax.yaxis.set_tick_params(labelsize=15)
+        ax.xaxis.label.set_size(20)
+        ax.yaxis.label.set_size(20)
+
+    handles, labels = axs.flatten()[0].get_legend_handles_labels()      
+    
+    fig.legend(
+        handles, 
+        labels,
+        loc            = 'upper center',
+        bbox_to_anchor = (0.5, -0.01),
+        fancybox       = True,
+        shadow         = True,
+        ncol           = 6,
+        fontsize       = 20
+    )
+    fig.set_size_inches(16, 12)
     fig.tight_layout(pad=2.0)
     fig.savefig(
         os.path.join(figures_path, 'roc_curves.pdf'),

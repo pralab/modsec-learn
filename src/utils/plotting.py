@@ -125,8 +125,9 @@ def plot_roc(
         ax.indicate_inset_zoom(zoom_axs[pl], edgecolor="grey")
 
     # Other settings
-    ax.set_ylim([0.20, 1.05])
+    if legend_settings is not None:
+        ax.legend(**legend_settings)
+    ax.set_ylim([0.45, 1.05])
     ax.set_xlabel("False Positive Rate (FPR)", fontsize=16, labelpad=10)
     ax.set_ylabel("True Positive Rate (TPR)", fontsize=16, labelpad=10)
     ax.grid(True)
-    ax.legend(**legend_settings)

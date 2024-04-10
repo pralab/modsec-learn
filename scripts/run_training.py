@@ -60,11 +60,9 @@ if __name__        == '__main__':
                     model = LinearSVC(
                         C             = 0.5,
                         penalty       = penalty,
-                        dual          = False,
                         class_weight  = 'balanced',
                         random_state  = 77,
                         fit_intercept = False,
-                        max_iter      = 1000
                     )
                     model.fit(xtr, ytr)
 
@@ -91,7 +89,6 @@ if __name__        == '__main__':
                     model = LogisticRegression(
                         C            = 0.5,
                         penalty      = penalty,
-                        dual         = False,
                         class_weight = 'balanced',
                         random_state = 77,
                         n_jobs       = -1,

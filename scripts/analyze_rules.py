@@ -24,9 +24,9 @@ def analyze_weights(
     crs_ids,
     crs_weights,
     figure_path,
-    legend_fontsize  = 16,
-    axis_labels_size = 18,
-    tick_labels_size = 16
+    legend_fontsize  = 18,
+    axis_labels_size = 20,
+    tick_labels_size = 18
 ):
     """
     Analyze the assigned weights for the ML models with L1 and L2 regularization
@@ -75,8 +75,8 @@ def analyze_weights(
                       model_l1_weights.tolist() + 
                       model_l2_weights.tolist(),
             'type': ['ModSec'] * len(crs_ids) + 
-                    [f'{model_name} - L1'] * len(crs_ids) + 
-                    [f'{model_name} - L2'] * len(crs_ids)
+                    [f'{model_name} - $\ell_1$'] * len(crs_ids) + 
+                    [f'{model_name} - $\ell_2$'] * len(crs_ids)
         }
     )
 
@@ -111,13 +111,13 @@ def analyze_weights(
     axs.set_xlabel('CRS SQLi Rules', fontsize=axis_labels_size, labelpad=10)
     axs.set_ylabel('Weight', fontsize=axis_labels_size, labelpad=10)
     axs.set_xmargin(0.05)
-    axs.set_ymargin(0.2)
+    axs.set_ymargin(0.15)
     axs.xaxis.set_tick_params(labelsize=tick_labels_size)
     axs.yaxis.set_tick_params(labelsize=tick_labels_size)
     
     axs.grid(visible=True, axis='both', color='gray', linestyle='dotted')
     
-    fig.set_size_inches(16, 6)
+    fig.set_size_inches(18, 8)
     fig.tight_layout()
     fig.savefig(
         os.path.join( 

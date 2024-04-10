@@ -67,13 +67,15 @@ if  __name__ == '__main__':
                         
             if model_name == 'rf':
                 label_legend = 'RF'
-                model       = joblib.load(
+                color        = 'green'
+                model        = joblib.load(
                     os.path.join(models_path, 'rf_pl{}.joblib'.format(pl))
                 )
-                y_scores    = model.predict_proba(xts)[:, 1]
+                y_scores     = model.predict_proba(xts)[:, 1]
                 
             elif model_name == 'modsec':
                 label_legend = 'ModSec'
+                color        = 'red'
                 waf = PyModSecurity(
                     rules_dir = crs_dir,
                     pl        = pl
@@ -85,6 +87,7 @@ if  __name__ == '__main__':
                 y_scores, 
                 label_legend       = label_legend,
                 ax                 = axs.flatten()[pl-1],
+                settings           = {'color': color},
                 plot_rand_guessing = False,
                 log_scale          = True,
                 update_roc_values  = True if pl == 1 else False,
@@ -98,24 +101,27 @@ if  __name__ == '__main__':
 
             for penalty in penalties:
                 if model_name == 'svc':
-                    label_legend = f'SVM - {penalty.upper()}'
-                    model    = joblib.load(
+                    label_legend  = f'SVM - $\ell_{penalty[1]}$'
+                    settings      = {'color': 'blue', 'linestyle': 'solid' if penalty == 'l1' else '--'}
+                    model         = joblib.load(
                         os.path.join(models_path, 'linear_svc_pl{}_{}.joblib'.format(pl, penalty))
                     )
-                    y_scores = model.decision_function(xts)
+                    y_scores     = model.decision_function(xts)
                     
                 elif model_name == 'log_reg':
-                    label_legend = f'LR - {penalty.upper()}'
-                    model    = joblib.load(
+                    label_legend  = f'LR - $\ell_{penalty[1]}$'
+                    settings      = {'color': 'orange', 'linestyle': 'solid' if penalty == 'l1' else '--'}
+                    model         = joblib.load(
                         os.path.join(models_path, 'log_reg_pl{}_{}.joblib'.format(pl, penalty))
                     )
-                    y_scores = model.predict_proba(xts)[:, 1]
+                    y_scores      = model.predict_proba(xts)[:, 1]
                     
                 plot_roc(
                     yts, 
                     y_scores, 
                     label_legend       = label_legend,
                     ax                 = axs.flatten()[pl-1],
+                    settings           = settings,
                     plot_rand_guessing = False,
                     log_scale          = True,
                     update_roc_values  = True if pl == 1 else False,
@@ -124,11 +130,11 @@ if  __name__ == '__main__':
                     pl                 = pl
                 )
 
-    # Final settings for the plot
+    # Final global settings for the figure
     for idx, ax in enumerate(axs.flatten()):
         ax.set_title('PL {}'.format(idx+1), fontsize=20)
-        ax.xaxis.set_tick_params(labelsize=15)
-        ax.yaxis.set_tick_params(labelsize=15)
+        ax.xaxis.set_tick_params(labelsize = 15)
+        ax.yaxis.set_tick_params(labelsize = 15)
         ax.xaxis.label.set_size(20)
         ax.yaxis.label.set_size(20)
 
@@ -144,8 +150,8 @@ if  __name__ == '__main__':
         ncol           = 6,
         fontsize       = 20
     )
-    fig.set_size_inches(16, 12)
-    fig.tight_layout(pad=2.0)
+    fig.set_size_inches(16, 10)
+    fig.tight_layout(pad = 2.0)
     fig.savefig(
         os.path.join(figures_path, 'roc_curves.pdf'),
         dpi         = 600,

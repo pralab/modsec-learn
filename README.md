@@ -1,4 +1,4 @@
-# modsec-ml
+# modsec-learn
 
 ## How to cite us
 
@@ -22,7 +22,7 @@ Currently, this is a tricky process, since you will need to [build ModSecurity v
 
 ### Install pymodsecurity
 
-In `modsec-ml` ModSecurity methods are implemented via [pymodsecurity](https://github.com/pymodsecurity/pymodsecurity).
+In `modsec-learn` ModSecurity methods are implemented via [pymodsecurity](https://github.com/pymodsecurity/pymodsecurity).
 Since development on the official repository stopped on ModSecurity v3.0.3, the current workaround is: clone [this fork](https://github.com/AvalZ/pymodsecurity) and [build it from source](https://github.com/AvalZ/pymodsecurity#building-from-source)
 
 ### Clone the OWASP CoreRuleSet

@@ -3,7 +3,36 @@
 ## How to cite us
 
 If you want to cite us, please use the following (BibTeX) reference:
-```bibtex
+```BibTex
+@InProceedings{10.1007/978-3-031-76459-2_3,
+author="Scano, Christian
+and Floris, Giuseppe
+and Montaruli, Biagio
+and Demetrio, Luca
+and Valenza, Andrea
+and Compagna, Luca
+and Ariu, Davide
+and Piras, Luca
+and Balzarotti, Davide
+and Biggio, Battista",
+editor="Mehmood, Rashid
+and Hern{\'a}ndez, Guillermo
+and Pra{\c{c}}a, Isabel
+and Wikarek, Jaroslaw
+and Loukanova, Roussanka
+and Monteiro dos Reis, Ars{\'e}nio
+and Skarmeta, Antonio
+and Lombardi, Eleonora",
+title="ModSec-Learn: Boosting ModSecurity with Machine Learning",
+booktitle="Distributed Computing and Artificial Intelligence, Special Sessions I, 21st International Conference",
+year="2025",
+publisher="Springer Nature Switzerland",
+address="Cham",
+pages="23--33",
+isbn="978-3-031-76459-2"
+}
+
+
 ```
 ## Getting started
 
